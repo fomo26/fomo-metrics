@@ -90,8 +90,8 @@ All functions return a worst-case constant on any error or invalid input — the
 |--------|----------|-------|
 | AUROC / OvR AUROC | `MetricsConfig.AUROC_WORST` | `0.0` |
 | Macro F1 | `MetricsConfig.F1_WORST` | `0.0` |
-| MAE | `MetricsConfig.MAE_WORST` | `inf` |
-| Pearson r | `MetricsConfig.CORR_WORST` | `0.0` |
+| MAE | `MetricsConfig.MAE_WORST` | `100.0` |
+| Pearson r | `MetricsConfig.CORR_WORST` | `-100.0` |
 | Dice (DSC) | `MetricsConfig.DSC_WORST` | `0.0` |
 | NSD | `MetricsConfig.NSD_WORST` | `0.0` |
 
