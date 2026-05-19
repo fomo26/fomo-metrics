@@ -66,20 +66,9 @@ compute_multiclass_nsd(pred_mask, gt_mask, spacing_mm=(1.0, 1.0, 1.5))
 
 ### Fairness
 
+TODO: add fairness metrics (e.g. subgroup AUROC, subgroup F1, etc.) and examples.
 ```python
-from fomo_challenge_metrics import compute_per_group_metric, compute_fairness_gap
-from fomo_challenge_metrics import compute_auroc
-import numpy as np
 
-groups   = np.array(["A", "A", "B", "B"])
-y_true   = [0, 1, 0, 1]
-y_scores = [0.1, 0.9, 0.3, 0.7]
-
-per_group = compute_per_group_metric(compute_auroc, groups, y_true, y_scores)
-# -> {"A": 1.0, "B": 1.0}
-
-compute_fairness_gap(per_group)                          # max_minus_min (default)
-compute_fairness_gap(per_group, statistic="std")
 ```
 
 ## Worst-case constants
