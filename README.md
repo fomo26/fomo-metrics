@@ -1,6 +1,6 @@
 # challenges-metrics
 
-Metric functions for the [FOMO26 Challenge](https://fomo26.github.io). Callable functions with challenge-appropriate defaults — no config system, no CLI.
+Metric functions for the [FOMO26 Challenge](https://fomo26.github.io).
 
 ## Installation
 
@@ -71,29 +71,4 @@ TODO: add fairness metrics (e.g. subgroup AUROC, subgroup F1, etc.) and examples
 
 ```
 
-## Worst-case constants
 
-All functions return a worst-case constant on any error or invalid input — they never raise.
-
-| Metric | Constant | Value |
-|--------|----------|-------|
-| AUROC / OvR AUROC | `MetricsConfig.AUROC_WORST` | `0.0` |
-| Macro F1 | `MetricsConfig.F1_WORST` | `0.0` |
-| MAE | `MetricsConfig.MAE_WORST` | `100.0` |
-| Pearson r | `MetricsConfig.CORR_WORST` | `-100.0` |
-| Dice (DSC) | `MetricsConfig.DSC_WORST` | `0.0` |
-| NSD | `MetricsConfig.NSD_WORST` | `0.0` |
-
-## Running tests
-
-```bash
-uv run pytest tests/ -v
-```
-
-## Dependencies
-
-- [numpy](https://numpy.org)
-- [scikit-learn](https://scikit-learn.org)
-- [scipy](https://scipy.org)
-- [surface-distance](https://github.com/google-deepmind/surface-distance) (google-deepmind)
-- [pydantic](https://docs.pydantic.dev) ≥ 2
