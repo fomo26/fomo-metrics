@@ -30,7 +30,7 @@ Repository = "https://github.com/fomo26/fomo-metrics"
 Homepage = "https://github.com/fomo26/fomo-metrics"
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "mypy"]
+dev = ["pytest", "ruff"]
 
 [build-system]
 requires = ["hatchling"]

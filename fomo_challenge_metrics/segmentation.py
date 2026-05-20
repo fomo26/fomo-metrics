@@ -3,7 +3,6 @@
 import numpy as np
 import surface_distance as surfdist
 
-from ._config import MetricsConfig
 
 
 def compute_dice_coefficient(pred_mask: np.ndarray, gt_mask: np.ndarray) -> float:
@@ -19,12 +18,12 @@ def compute_dice_coefficient(pred_mask: np.ndarray, gt_mask: np.ndarray) -> floa
             return 1.0
 
         if pred_sum == 0 or gt_sum == 0:
-            return MetricsConfig.DSC_WORST
+            return 0.0
 
         intersection = np.sum(pred_binary & gt_binary)
         return float(2.0 * intersection / (pred_sum + gt_sum))
     except Exception:
-        return MetricsConfig.DSC_WORST
+        return 0.0
 
 
 def compute_normalized_surface_distance(
@@ -42,17 +41,17 @@ def compute_normalized_surface_distance(
             return 0.0
 
         if np.sum(pred_binary) == 0 or np.sum(gt_binary) == 0:
-            return MetricsConfig.NSD_WORST
+            return 0.0
 
         surface_distances = surfdist.compute_surface_distances(gt_binary, pred_binary, spacing_mm)
         nsd_score = surfdist.compute_surface_dice_at_tolerance(surface_distances, tolerance_mm)
 
         if np.isnan(nsd_score) or np.isinf(nsd_score):
-            return MetricsConfig.NSD_WORST
+            return 0.0
 
         return float(nsd_score)
     except Exception:
-        return MetricsConfig.NSD_WORST
+        return 0.0
 
 
 def compute_multiclass_dsc(
@@ -72,7 +71,7 @@ def compute_multiclass_dsc(
     except Exception:
         if _labels is None:
             return {}
-        return {int(l): MetricsConfig.DSC_WORST for l in _labels}
+        return {int(l): 0.0 for l in _labels}
 
 
 def compute_multiclass_nsd(
@@ -96,4 +95,4 @@ def compute_multiclass_nsd(
     except Exception:
         if _labels is None:
             return {}
-        return {int(l): MetricsConfig.NSD_WORST for l in _labels}
+        return {int(l): 0.0 for l in _labels}
