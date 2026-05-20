@@ -54,45 +54,4 @@ def compute_normalized_surface_distance(
         return 0.0
 
 
-def compute_multiclass_dsc(
-    pred_mask: np.ndarray,
-    gt_mask: np.ndarray,
-    labels: list[int] | None = None,
-) -> dict[int, float]:
-    """Compute Dice coefficient per class. Label 0 always excluded."""
-    _labels = labels
-    try:
-        if _labels is None:
-            _labels = [int(l) for l in np.unique(gt_mask) if l != 0]
-        result = {}
-        for label in _labels:
-            result[label] = compute_dice_coefficient(pred_mask == label, gt_mask == label)
-        return result
-    except Exception:
-        if _labels is None:
-            return {}
-        return {int(l): 0.0 for l in _labels}
 
-
-def compute_multiclass_nsd(
-    pred_mask: np.ndarray,
-    gt_mask: np.ndarray,
-    spacing_mm: tuple[float, float, float],
-    tolerance_mm: float = 1.0,
-    labels: list[int] | None = None,
-) -> dict[int, float]:
-    """Compute NSD per class. Label 0 always excluded."""
-    _labels = labels
-    try:
-        if _labels is None:
-            _labels = [int(l) for l in np.unique(gt_mask) if l != 0]
-        result = {}
-        for label in _labels:
-            result[label] = compute_normalized_surface_distance(
-                pred_mask == label, gt_mask == label, spacing_mm, tolerance_mm
-            )
-        return result
-    except Exception:
-        if _labels is None:
-            return {}
-        return {int(l): 0.0 for l in _labels}
