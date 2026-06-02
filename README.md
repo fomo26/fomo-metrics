@@ -66,9 +66,41 @@ compute_multiclass_nsd(pred_mask, gt_mask, spacing_mm=(1.0, 1.0, 1.5))
 
 ### Fairness
 
-TODO: add fairness metrics (e.g. subgroup AUROC, subgroup F1, etc.) and examples.
 ```python
+from fomo_challenge_metrics import compute_max_disparity, compute_fairness_score
 
+y_true   = [0, 1, 2, 0, 1, 2]
+y_scores = [
+    [0.9, 0.05, 0.05], [0.05, 0.9, 0.05], [0.05, 0.05, 0.9],
+    [0.8, 0.10, 0.10], [0.10, 0.8, 0.10], [0.10, 0.10, 0.8],
+]
+
+# Group labels must be pre-binned integers (or any hashable) by the caller.
+# None entries are excluded from disparity calculations.
+groups_a = [0, 1, 0, 1, 0, 1]   # e.g. a binary demographic variable
+groups_b = [0, 0, 1, 1, 2, 2]   # e.g. an age bucket variable
+
+# Maximum disparity for a single variable
+d = compute_max_disparity(y_true, y_scores, groups_a, compute_ovr_f1)
+
+# Fairness score aggregated across multiple variables
+result = compute_fairness_score(
+    y_true, y_scores,
+    groups_by_variable={"var_a": groups_a, "var_b": groups_b},
+    metric_fn=compute_ovr_f1,
+)
+# result["score"]                      → scalar in [0, 1]; 1.0 = perfect equity
+# result["disparities"]                → {"var_a": ..., "var_b": ...}
+# result["variables_used"]             → variables with a defined disparity
+# result["per_variable_contribution"]  → 1 - disparity per variable
 ```
+
+**Fairness score** (per metric M):
+
+    FairnessScore(M) = (1 / |V'|) * Σ_{v in V'} (1 - D_v(M))
+
+where `D_v(M)` is the maximum disparity across groups in variable `v`,
+and `V'` is the subset of variables for which `D_v` is defined.
+Score of **1.0** = perfect equity; **0.0** = maximum disparity on every variable.
 
 
