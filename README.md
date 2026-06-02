@@ -77,8 +77,8 @@ y_scores = [
 
 # Group labels must be pre-binned integers (or any hashable) by the caller.
 # None entries are excluded from disparity calculations.
-groups_a = [0, 1, 0, 1, 0, 1]   # e.g. a binary demographic variable
-groups_b = [0, 0, 1, 1, 2, 2]   # e.g. an age bucket variable
+groups_a = []   # e.g. a variable A
+groups_b = [2]   # e.g. a variable B
 
 # Maximum disparity for a single variable
 d = compute_max_disparity(y_true, y_scores, groups_a, compute_ovr_f1)
