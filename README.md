@@ -78,7 +78,7 @@ y_scores = [
 # Group labels must be pre-binned integers (or any hashable) by the caller.
 # None entries are excluded from disparity calculations.
 groups_a = []   # e.g. a variable A
-groups_b = [2]   # e.g. a variable B
+groups_b = []   # e.g. a variable B
 
 # Maximum disparity for a single variable
 d = compute_max_disparity(y_true, y_scores, groups_a, compute_ovr_f1)
