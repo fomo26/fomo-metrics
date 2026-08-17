@@ -220,3 +220,76 @@ class TestComputeOVRF1:
     def test_returns_float(self, multiclass_perfect):
         y_true, y_scores = multiclass_perfect
         assert isinstance(compute_ovr_f1(y_true, y_scores), float)
+
+# ---------------------------------------------------------------------------
+# compute_ovr_auroc on class subsets and binary tasks
+#
+# Both of these raised before. compute_max_disparity catches every exception
+# and drops the group, so the failure was invisible: a variable whose disparity
+# was never measured could still contribute a perfect 1.0 to the fairness score.
+# ---------------------------------------------------------------------------
+
+def test_ovr_auroc_scores_a_group_missing_a_class():
+    """A demographic group that happens to contain only 2 of 3 classes is
+    common in small bins, and is not a reason to skip it."""
+    y_true = [0, 1] * 6
+    y_scores = [[0.7, 0.2, 0.1] if label == 0 else [0.2, 0.7, 0.1] for label in y_true]
+    assert compute_ovr_auroc(y_true, y_scores) == pytest.approx(1.0)
+
+
+def test_ovr_auroc_handles_a_binary_task():
+    """sklearn wants a 1-D score array when there are two classes."""
+    y_true = [0, 1] * 10
+    y_scores = [[0.8, 0.2] if label == 0 else [0.2, 0.8] for label in y_true]
+    assert compute_ovr_auroc(y_true, y_scores) == pytest.approx(1.0)
+
+    inverted = [[0.2, 0.8] if label == 0 else [0.8, 0.2] for label in y_true]
+    assert compute_ovr_auroc(y_true, inverted) == pytest.approx(0.0)
+
+
+def test_ovr_auroc_unchanged_when_every_class_is_present(multiclass_perfect):
+    """The fix must not move any score that already computed."""
+    y_true, y_scores = multiclass_perfect
+    assert compute_ovr_auroc(y_true, y_scores) == pytest.approx(1.0)
+
+
+def test_ovr_auroc_matches_sklearn_on_the_full_case():
+    """Agreement with the previous implementation, on data where it worked."""
+    import numpy as np
+    from sklearn.metrics import roc_auc_score
+
+    rng = np.random.default_rng(0)
+    y_true = [0, 1, 2] * 10
+    scores = rng.random((30, 3))
+    scores /= scores.sum(axis=1, keepdims=True)
+    expected = roc_auc_score(y_true, scores, multi_class="ovr", average="macro")
+    assert compute_ovr_auroc(y_true, scores.tolist()) == pytest.approx(expected)
+
+
+def test_ovr_auroc_is_nan_when_a_group_has_one_class():
+    """Genuinely undefined, so NaN is right and compute_max_disparity should
+    still drop it."""
+    import math
+
+    assert math.isnan(compute_ovr_auroc([1] * 8, [[0.2, 0.7, 0.1]] * 8))
+    assert math.isnan(compute_ovr_auroc([0] * 8, [[0.7, 0.3]] * 8))
+
+
+def test_ovr_auroc_still_penalises_invalid_rows():
+    """The None-row replacement is orthogonal to this fix and must survive."""
+    y_true = [0, 1] * 6
+    good = [[0.9, 0.1] if label == 0 else [0.1, 0.9] for label in y_true]
+    assert compute_ovr_auroc(y_true, good) == pytest.approx(1.0)
+
+    with_invalid = list(good)
+    with_invalid[0] = None
+    assert compute_ovr_auroc(y_true, with_invalid) < 1.0
+
+
+def test_ovr_auroc_handles_an_invalid_row_in_first_position():
+    """The docstring promises None rows are replaced, but the class count was
+    read as len(y_scores[0]), which raises when that row is the None."""
+    y_true = [0, 1] * 6
+    scores = [[0.9, 0.1] if label == 0 else [0.1, 0.9] for label in y_true]
+    scores[0] = None
+    assert compute_ovr_auroc(y_true, scores) < 1.0

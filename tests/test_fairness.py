@@ -135,3 +135,37 @@ class TestComputeFairnessScore:
         y_true, y_scores, _ = balanced_groups
         with pytest.raises(ValueError):
             compute_fairness_score(y_true, y_scores, {"bad": ["A"]}, compute_ovr_f1)
+
+
+def test_disparity_is_measured_when_a_group_misses_a_class():
+    """Regression for the silent path: group B contains no class 2, which used
+    to raise inside compute_ovr_auroc, get swallowed, and leave a single valid
+    group. compute_max_disparity then returned 0.0 by contract and the variable
+    contributed a perfect 1.0 to the fairness score without ever having been
+    evaluated."""
+    y_true = [0, 1, 2] * 10 + [0, 1] * 6
+    groups = ["A"] * 30 + ["B"] * 12
+    scores = [
+        [0.7, 0.2, 0.1] if label == 0 else [0.2, 0.7, 0.1] if label == 1
+        else [0.1, 0.2, 0.7]
+        for label in y_true
+    ]
+
+    result = compute_fairness_score(
+        y_true, scores, {"site": groups}, compute_ovr_auroc
+    )
+    assert result["variables_used"] == ["site"]
+    assert not math.isnan(result["disparities"]["site"])
+
+
+def test_fairness_score_is_defined_for_a_binary_task():
+    """Every group raised, so the score came back NaN with no variables used."""
+    y_true = [0, 1] * 20
+    groups = ["A"] * 20 + ["B"] * 20
+    scores = [[0.8, 0.2] if label == 0 else [0.2, 0.8] for label in y_true]
+
+    result = compute_fairness_score(
+        y_true, scores, {"site": groups}, compute_ovr_auroc
+    )
+    assert not math.isnan(result["score"])
+    assert result["variables_used"] == ["site"]
